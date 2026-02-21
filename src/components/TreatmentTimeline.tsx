@@ -35,7 +35,7 @@ export function TreatmentTimeline({ events }: { events: TimelineEvent[] }) {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 + i * 0.04 }}
-                className="flex flex-col items-center gap-3 min-w-[160px] max-w-[180px]"
+                className="flex flex-col items-center gap-3 min-w-[160px]"
               >
                 <div className={`rounded-full p-3 ${config.color}`}>
                   <Icon size={18} />
@@ -49,16 +49,10 @@ export function TreatmentTimeline({ events }: { events: TimelineEvent[] }) {
                     {event.detail}
                   </span>
                 )}
-                {i < events.length - 1 && (
-                  <div className="absolute" />
-                )}
               </motion.div>
             );
           })}
         </div>
-
-        {/* Connecting line */}
-        <div className="relative mt-[-80px] mx-[85px] h-px bg-border" style={{ width: `calc(${events.length} * 168px - 168px)` }} />
       </div>
     </motion.div>
   );
