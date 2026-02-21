@@ -44,7 +44,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-background flex flex-col animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-background dark:bg-background flex flex-col animate-fade-in">
       {/* Header */}
       <header className="border-b border-blue-100/50 bg-white/80 backdrop-blur-sm transition-all duration-300">
         <div className="flex items-center justify-between px-4 py-4 lg:px-8 max-w-7xl mx-auto w-full">
