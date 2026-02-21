@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Mic, MicOff, Type, Pause, Play } from "lucide-react";
+import { Mic, Type, Pause, Play, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -15,9 +15,11 @@ export const PatientInputCell = ({ patientId }: PatientInputCellProps) => {
   const [mode, setMode] = useState<Mode>("idle");
   const [micState, setMicState] = useState<MicState>("recording");
   const [textValue, setTextValue] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const recordingBlobRef = useRef<Blob | null>(null);
 
   const startMic = useCallback(async () => {
     try {
@@ -33,8 +35,8 @@ export const PatientInputCell = ({ patientId }: PatientInputCellProps) => {
       };
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm;codecs=opus" });
-        console.log(`Recording saved: ${(blob.size / 1024).toFixed(1)} KB, type: ${blob.type}`);
-        // TODO: upload or process blob
+        recordingBlobRef.current = blob;
+        console.log(`Recording ready: ${(blob.size / 1024).toFixed(1)} KB`);
       };
       mediaRecorderRef.current = recorder;
       recorder.start(1000); // collect chunks every second
@@ -57,11 +59,50 @@ export const PatientInputCell = ({ patientId }: PatientInputCellProps) => {
     }
   }, [micState]);
 
-  const stopMic = useCallback(() => {
+  const sendMic = useCallback(async () => {
     mediaRecorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((t) => t.stop());
     mediaRecorderRef.current = null;
     streamRef.current = null;
+    
+    // Upload the recording to the backend
+    if (recordingBlobRef.current) {
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("audio", recordingBlobRef.current, "recording.webm");
+        formData.append("patientId", patientId);
+        
+        const response = await fetch("/api/audio/upload", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (response.ok) {
+          console.log("Audio uploaded successfully");
+          recordingBlobRef.current = null;
+        } else {
+          console.error("Failed to upload audio:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error uploading audio:", error);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+    
+    setMode("idle");
+    setMicState("recording");
+  }, [patientId]);
+
+  const cancelMic = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    mediaRecorderRef.current = null;
+    streamRef.current = null;
+    chunksRef.current = [];
+    recordingBlobRef.current = null;
+    console.log("Recording cancelled and data discarded");
     setMode("idle");
     setMicState("recording");
   }, []);
@@ -103,13 +144,34 @@ export const PatientInputCell = ({ patientId }: PatientInputCellProps) => {
           )}
         />
         <span className="text-xs text-muted-foreground font-body">
-          {micState === "recording" ? "Recording…" : "Paused"}
+          {isUploading ? "Uploading…" : micState === "recording" ? "Recording…" : "Paused"}
         </span>
-        <Button size="sm" variant="outline" onClick={togglePause} className="h-8 px-2">
+        <Button 
+          size="sm" 
+          variant="outline" 
+          onClick={togglePause} 
+          className="h-8 px-2"
+          disabled={isUploading}
+        >
           {micState === "recording" ? <Pause size={14} /> : <Play size={14} />}
         </Button>
-        <Button size="sm" variant="ghost" onClick={stopMic} className="h-8 px-2 text-destructive">
-          <MicOff size={14} />
+        <Button 
+          size="sm" 
+          variant="default" 
+          onClick={sendMic} 
+          className="h-8 px-2"
+          disabled={isUploading}
+        >
+          <Send size={14} />
+        </Button>
+        <Button 
+          size="sm" 
+          variant="ghost" 
+          onClick={cancelMic} 
+          className="h-8 px-2 text-destructive"
+          disabled={isUploading}
+        >
+          <X size={14} />
         </Button>
       </div>
     );
