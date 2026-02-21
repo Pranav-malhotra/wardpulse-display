@@ -17,14 +17,27 @@ export const PatientInputCell = ({ patientId }: PatientInputCellProps) => {
   const [textValue, setTextValue] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const startMic = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const recorder = new MediaRecorder(stream);
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm;codecs=opus" });
+        console.log(`Recording saved: ${(blob.size / 1024).toFixed(1)} KB, type: ${blob.type}`);
+        // TODO: upload or process blob
+      };
       mediaRecorderRef.current = recorder;
-      recorder.start();
+      recorder.start(1000); // collect chunks every second
       setMode("mic");
       setMicState("recording");
     } catch {
