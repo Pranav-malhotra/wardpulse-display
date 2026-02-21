@@ -16,15 +16,15 @@ export function TreatmentTimeline({ events }: { events: TimelineEvent[] }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="rounded-lg bg-card border border-border p-6"
+      className="rounded-lg bg-card border border-border p-8"
     >
-      <h3 className="flex items-center gap-2 text-xl font-heading text-foreground mb-5">
+      <h3 className="flex items-center gap-2 text-xl font-heading text-foreground mb-8">
         <Clock size={20} className="text-primary" />
         Treatment Timeline
       </h3>
 
-      <div className="overflow-x-auto pb-2">
-        <div className="flex gap-3 min-w-max">
+      <div className="overflow-x-auto pb-4">
+        <div className="flex gap-6 min-w-max">
           {events.map((event, i) => {
             const config = typeConfig[event.type] || typeConfig.note;
             const Icon = config.icon;
@@ -35,10 +35,10 @@ export function TreatmentTimeline({ events }: { events: TimelineEvent[] }) {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 + i * 0.04 }}
-                className="flex flex-col items-center gap-2 min-w-[140px] max-w-[160px]"
+                className="flex flex-col items-center gap-3 min-w-[160px] max-w-[180px]"
               >
-                <div className={`rounded-full p-2.5 ${config.color}`}>
-                  <Icon size={16} />
+                <div className={`rounded-full p-3 ${config.color}`}>
+                  <Icon size={18} />
                 </div>
                 <span className="text-xs font-body font-medium text-muted-foreground">{event.time}</span>
                 <span className="text-xs font-body text-center text-foreground/80 leading-snug font-medium">
@@ -58,7 +58,7 @@ export function TreatmentTimeline({ events }: { events: TimelineEvent[] }) {
         </div>
 
         {/* Connecting line */}
-        <div className="relative mt-[-72px] mx-[70px] h-px bg-border" style={{ width: `calc(${events.length} * 152px - 152px)` }} />
+        <div className="relative mt-[-80px] mx-[85px] h-px bg-border" style={{ width: `calc(${events.length} * 168px - 168px)` }} />
       </div>
     </motion.div>
   );

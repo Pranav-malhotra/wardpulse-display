@@ -244,7 +244,7 @@ const Index = () => {
       {/* Footer */}
       <div className="max-w-7xl mx-auto mt-8 pt-4 border-t border-border text-center">
         <span className="text-xs text-muted-foreground font-body">
-          PulseGuard v1.0 — AI-Driven Handoff Intelligence
+          Team Mavricks || PEC
         </span>
       </div>
     </div>
